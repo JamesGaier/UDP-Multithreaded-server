@@ -7,16 +7,22 @@ project(
 include_dir = include_directories('src/')
 
 udp_sock_src = [
-    'src/sock.cpp'
+    'src/sock.cpp',
+    'src/thread_pool.cpp',
+    'src/udp_server.cpp',
+]
+
+udp_socket_main_src = [
+
+    'src/socket_example.cpp',
 ]
 
 udp_serv_main_src = [
-    'src/main.cpp',
-    'src/thread_pool.cpp',
+    'src/udp_server_example.cpp'
 ]
 
 udp_cli_main_src = [
-    'src/main_client.cpp'
+    'src/socket_client_example.cpp'
 ]
 
 udp_server_lib = library(
@@ -30,17 +36,25 @@ udp_server_dep = declare_dependency(
 )
 
 executable(
-    'multithreaded-server',
-    udp_serv_main_src,
+    'udp-socket',
+    udp_socket_main_src,
     udp_sock_src,
     dependencies: [udp_server_dep],
-    cpp_args: ['-std=c++17', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
+    cpp_args: ['-std=c++20', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
 )
 
 executable(
-    'multithreaded-client',
+    'udp-client',
     udp_cli_main_src,
     udp_sock_src,
     dependencies: [udp_server_dep],
-    cpp_args: ['-std=c++17', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
+    cpp_args: ['-std=c++20', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
+)
+
+executable(
+    'udp-server',
+    udp_serv_main_src,
+    udp_sock_src,
+    dependencies: [udp_server_dep],
+    cpp_args: ['-std=c++20', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
 )

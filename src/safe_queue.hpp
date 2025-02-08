@@ -12,12 +12,12 @@ namespace serv
 {
 
 template <typename T>
-class ThreadSafeQueue
+class BlockingQueue
 {
 public:
     constexpr static auto QUEUE_EMPTY = "cannot pop item, queue is already empty!";
     
-    ~ThreadSafeQueue()
+    ~BlockingQueue()
     {
         m_done = true;
         m_cv.notify_one();
@@ -35,7 +35,7 @@ public:
     std::optional<T> pop()
     {
         std::unique_lock<std::mutex> ul(m_mutex);
-        m_cv.wait(ul, [=] { return !m_queue.empty() || m_done.load(); });
+        m_cv.wait(ul, [=, this] { return !m_queue.empty() || m_done.load(); });
         
         if (m_queue.empty())
             return std::nullopt;

@@ -8,6 +8,12 @@ ThreadPool::ThreadPool(int numThreads)
 : m_running(true)
 , m_numThreads(numThreads)
 {
+    start();
+}
+
+ThreadPool::~ThreadPool()
+{
+    stop();
 }
 
 void ThreadPool::addTask(Task task)

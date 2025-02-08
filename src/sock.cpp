@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <optional>
 
 namespace serv
 {
@@ -17,15 +18,6 @@ void UDPSocket::makeSocket()
         throw std::runtime_error(SOCKET_CREATION_FAILED);
     } 
 }
-
-// sockaddr_in UDPSocket::makeSockConfig(const std::string &ip, int port)
-// {
-//     //sockaddr_in sockConfig;
-//     //memset(&sockConfig, 0, sizeof(sockaddr_in)); 
-//     //m_sockAddr.sin_family = AF_INET;
-//     //m_sockAddr.sin_addr.s_addr = inet_addr(srcIp.data());
-//     //m_sockAddr.sin_port = htons(srcPort);
-// }
 
 UDPSocket::UDPSocket(const std::string &srcIp, int srcPort)
 {
@@ -48,44 +40,40 @@ void UDPSocket::Bind()
     }
 }
 
-void UDPSocket::Recv(const std::string &ip, int port)
+UDPSocket::PacketData UDPSocket::Recv()
 {
-    sockaddr_in srcAddr;
-    memset(&srcAddr, 0, sizeof(srcAddr)); 
-    srcAddr.sin_family = AF_INET;
-    srcAddr.sin_addr.s_addr = inet_addr(ip.data());
-    srcAddr.sin_port = htons(port);
-    socklen_t length = sizeof(srcAddr);
-
-    auto sockAddr = (sockaddr *)&srcAddr;
+    PacketData packetData;
+    std::vector<char> buffer(P_SIZE);
+    sockaddr_in sockAddrCpy(m_sockAddr);
+    socklen_t length = sizeof(sockAddrCpy);
+    auto sockAddr = (sockaddr *)&sockAddrCpy;
     int recvSuccess = recvfrom(
         m_socketfd, 
-        m_buffer.data(), 
+        buffer.data(), 
         P_SIZE,
         MSG_WAITALL, 
         sockAddr,
         &length
     );
+
+    std::vector<char> srcIpBuf(P_SIZE);
+    inet_ntop(AF_INET, &sockAddrCpy.sin_addr, srcIpBuf.data(), P_SIZE);
+    std::string srcIpStr(srcIpBuf.begin(), srcIpBuf.end());
+    packetData.ip = srcIpStr;
+    packetData.port = ntohs(sockAddrCpy.sin_port);
     
     if (recvSuccess == -1)
     {
+        packetData.data = {};
         std::cerr << "socket rcvfrom timed out" << std::endl;
+        return packetData;
     }
     
-    printBuffer();
+    packetData.data = std::move(buffer);
+    
+    return packetData; 
 }
 
-
-void UDPSocket::printBuffer()
-{
-    for (char ch : m_buffer)
-    {
-        if (ch == NULL_TERM)
-            break;
-        std::cout << ch;
-    }
-    std::cout << std::endl;
-}
 
 void UDPSocket::Send(const std::vector<char> &bytes, const std::string &ip, int port)
 {
