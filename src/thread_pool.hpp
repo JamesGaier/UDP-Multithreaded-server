@@ -1,3 +1,4 @@
+#pragma once
 #include "safe_queue.hpp"
 #include <atomic>
 #include <thread>

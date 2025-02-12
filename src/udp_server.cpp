@@ -10,7 +10,6 @@ UDPServer::UDPServer(const std::string &ip, int port)
 , m_running(true)
 {
     m_socket.Bind();
-    m_socket.setRecvTimeout(3, 0);
     m_recvThread = std::jthread(&UDPServer::recvLoop, this);
 }
 

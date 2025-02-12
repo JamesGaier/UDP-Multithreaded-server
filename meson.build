@@ -10,6 +10,7 @@ udp_sock_src = [
     'src/sock.cpp',
     'src/thread_pool.cpp',
     'src/udp_server.cpp',
+    'src/udp_server_multithreaded.cpp',
 ]
 
 udp_socket_main_src = [
@@ -23,6 +24,10 @@ udp_serv_main_src = [
 
 udp_cli_main_src = [
     'src/socket_client_example.cpp'
+]
+
+udp_multi_main_src = [
+    'src/multithreaded_udp_example.cpp'
 ]
 
 udp_server_lib = library(
@@ -54,6 +59,14 @@ executable(
 executable(
     'udp-server',
     udp_serv_main_src,
+    udp_sock_src,
+    dependencies: [udp_server_dep],
+    cpp_args: ['-std=c++20', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
+)
+
+executable(
+    'udp-multi-server',
+    udp_multi_main_src,
     udp_sock_src,
     dependencies: [udp_server_dep],
     cpp_args: ['-std=c++20', '-Wall', '-Wextra', '-Wpedantic', '-Werror', '-O3']
